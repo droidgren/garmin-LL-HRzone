@@ -1,0 +1,17 @@
+# Garmin Connect IQ / Monkey C build outputs
+**/bin/
+**/*.prg
+**/*.iq
+
+# Local VS Code machine-specific config
+LastLapHRZone/.vscode/ciq.local.json
+
+# Signing keys / certificates (do not commit)
+**/developer_key
+**/*.der
+**/*.key
+**/*.pem
+
+# OS noise
+Thumbs.db
+.DS_Store
