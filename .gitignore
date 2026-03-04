@@ -5,6 +5,9 @@
 
 # Local VS Code machine-specific config
 LastLapHRZone/.vscode/ciq.local.json
+LastLapHRZone/.vscode/task.json
+LastLapHRZone/.vscode/tasks.json
+garmin-LL-HRzone.code-workspace
 
 # Signing keys / certificates (do not commit)
 **/developer_key
