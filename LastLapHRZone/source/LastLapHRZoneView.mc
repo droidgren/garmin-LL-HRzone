@@ -1,10 +1,11 @@
 import Toybox.Activity;
+import Toybox.Application;
+import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Time;
-import Toybox.WatchUi;
 import Toybox.UserProfile;
+import Toybox.WatchUi;
 
-class LastLapHRZoneView extends WatchUi.SimpleDataField {
+class LastLapHRZoneView extends WatchUi.DataField {
 
     // Accumulators for current lap HR data
     hidden var mCurrentLapHRSum as Number = 0;
@@ -12,10 +13,10 @@ class LastLapHRZoneView extends WatchUi.SimpleDataField {
 
     // The computed average HR zone for the last completed lap
     hidden var mLastLapAvgZone as Float or Null = null;
+    hidden var mDisplayText as String = "--";
 
     function initialize() {
-        SimpleDataField.initialize();
-        label = "LL HR Zone";
+        DataField.initialize();
     }
 
     // Called when the user presses the lap button (manual or auto-lap)
@@ -23,6 +24,7 @@ class LastLapHRZoneView extends WatchUi.SimpleDataField {
         if (mCurrentLapHRSamples > 0) {
             var avgHR = mCurrentLapHRSum.toFloat() / mCurrentLapHRSamples;
             mLastLapAvgZone = computeHRZone(avgHR);
+            mDisplayText = (mLastLapAvgZone as Float).format("%.1f");
         }
         // Reset accumulators for the new lap
         mCurrentLapHRSum = 0;
@@ -63,19 +65,41 @@ class LastLapHRZoneView extends WatchUi.SimpleDataField {
     }
 
     // Called once per second during an activity
-    function compute(info as Activity.Info) as Numeric or Duration or String or Null {
+    function compute(info as Activity.Info) as Void {
         // Accumulate HR samples for the current lap
         if (info has :currentHeartRate && info.currentHeartRate != null) {
             mCurrentLapHRSum += info.currentHeartRate as Number;
             mCurrentLapHRSamples++;
         }
+    }
 
-        // Display the last completed lap's average HR zone
-        if (mLastLapAvgZone != null) {
-            return (mLastLapAvgZone as Float).format("%.1f");
+    function onUpdate(dc as Graphics.Dc) as Void {
+        var backgroundColor = getBackgroundColor();
+        var defaultTextColor = getDefaultTextColor(backgroundColor);
+
+        dc.setColor(defaultTextColor, backgroundColor);
+        dc.clear();
+
+        var valueColor = defaultTextColor;
+        if (isZoneColorEnabled() && mLastLapAvgZone != null) {
+            valueColor = getZoneColor(mLastLapAvgZone as Float, backgroundColor);
         }
 
-        return "--";
+        var width = dc.getWidth();
+        var height = dc.getHeight();
+        var showLabel = height >= 40;
+        var labelFont = Graphics.FONT_XTINY;
+        var valueFont = getValueFont(height);
+        var labelHeight = showLabel ? dc.getFontHeight(labelFont) : 0;
+        var valueY = showLabel ? ((height + labelHeight) / 2) : (height / 2);
+
+        if (showLabel) {
+            dc.setColor(defaultTextColor, backgroundColor);
+            dc.drawText(width / 2, 0, labelFont, "LL HR Zone", Graphics.TEXT_JUSTIFY_CENTER);
+        }
+
+        dc.setColor(valueColor, backgroundColor);
+        dc.drawText(width / 2, valueY, valueFont, mDisplayText, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     // Reset everything when the timer is reset
@@ -83,6 +107,52 @@ class LastLapHRZoneView extends WatchUi.SimpleDataField {
         mCurrentLapHRSum = 0;
         mCurrentLapHRSamples = 0;
         mLastLapAvgZone = null;
+        mDisplayText = "--";
+    }
+
+    hidden function getValueFont(fieldHeight as Number) as Graphics.FontType {
+        if (fieldHeight >= 84) {
+            return Graphics.FONT_LARGE;
+        } else if (fieldHeight >= 56) {
+            return Graphics.FONT_MEDIUM;
+        }
+
+        return Graphics.FONT_SMALL;
+    }
+
+    hidden function isZoneColorEnabled() as Boolean {
+        try {
+            var value = Application.Properties.getValue("zone_color_digits");
+            if (value != null) {
+                return value as Boolean;
+            }
+        } catch (e) {
+        }
+
+        return true;
+    }
+
+    hidden function getDefaultTextColor(backgroundColor as Graphics.ColorType) as Graphics.ColorType {
+        if (backgroundColor == Graphics.COLOR_BLACK) {
+            return Graphics.COLOR_WHITE;
+        }
+
+        return Graphics.COLOR_BLACK;
+    }
+
+    // Garmin-style zones: 1 gray, 2 blue, 3 green, 4 orange, 5 red
+    hidden function getZoneColor(zone as Float, backgroundColor as Graphics.ColorType) as Graphics.ColorType {
+        if (zone < 2.0f) {
+            return (backgroundColor == Graphics.COLOR_BLACK) ? Graphics.COLOR_LT_GRAY : Graphics.COLOR_DK_GRAY;
+        } else if (zone < 3.0f) {
+            return Graphics.COLOR_BLUE;
+        } else if (zone < 4.0f) {
+            return Graphics.COLOR_GREEN;
+        } else if (zone < 5.0f) {
+            return Graphics.COLOR_ORANGE;
+        }
+
+        return Graphics.COLOR_RED;
     }
 
 }
