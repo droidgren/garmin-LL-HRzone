@@ -87,7 +87,7 @@ class LastLapHRZoneView extends WatchUi.DataField {
 
         var width = dc.getWidth();
         var height = dc.getHeight();
-        var showLabel = height >= 40;
+        var showLabel = (height >= 40) && isHeaderTextEnabled();
         var labelFont = Graphics.FONT_XTINY;
         var valueFont = getValueFont(height);
         var labelHeight = showLabel ? dc.getFontHeight(labelFont) : 0;
@@ -95,7 +95,7 @@ class LastLapHRZoneView extends WatchUi.DataField {
 
         if (showLabel) {
             dc.setColor(defaultTextColor, backgroundColor);
-            dc.drawText(width / 2, 0, labelFont, "LL HR Zone", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(width / 2, 0, labelFont, "LL HRZ", Graphics.TEXT_JUSTIFY_CENTER);
         }
 
         dc.setColor(valueColor, backgroundColor);
@@ -123,6 +123,18 @@ class LastLapHRZoneView extends WatchUi.DataField {
     hidden function isZoneColorEnabled() as Boolean {
         try {
             var value = Application.Properties.getValue("zone_color_digits");
+            if (value != null) {
+                return value as Boolean;
+            }
+        } catch (e) {
+        }
+
+        return true;
+    }
+
+    hidden function isHeaderTextEnabled() as Boolean {
+        try {
+            var value = Application.Properties.getValue("show_header_text");
             if (value != null) {
                 return value as Boolean;
             }
