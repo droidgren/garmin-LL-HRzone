@@ -4,7 +4,7 @@ Connect IQ data field that displays the average heart rate zone from your last c
 
 ## Current Version
 
-- `1.0.2` (2026-03-05)
+- `1.0.3` (2026-03-06)
 
 ## What It Does
 
@@ -12,6 +12,7 @@ Connect IQ data field that displays the average heart rate zone from your last c
 - Computes average HR at lap event
 - Converts average HR to decimal zone value (example: `3.4`)
 - Displays `--` until the first lap is completed
+- Optionally shows `LL HRZ` header text on taller layouts, with a setting to turn this on/off (default ON)
 - Colors the displayed value by Garmin-style HR zone (1 gray, 2 blue, 3 green, 4 orange, 5 red), with a setting to turn this on/off (default ON)
 - Resets values when the activity timer is reset
 
