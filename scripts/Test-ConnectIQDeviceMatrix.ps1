@@ -47,10 +47,10 @@ function Get-UniqueOrdered {
 function Get-ManifestDeviceIds {
     param([string]$ManifestPath)
 
-    $matches = Select-String -Path $ManifestPath -Pattern '<iq:product id="([^"]+)"' -AllMatches
+    $stringMatches = Select-String -Path $ManifestPath -Pattern '<iq:product id="([^"]+)"' -AllMatches
     $ids = New-Object System.Collections.Generic.List[string]
 
-    foreach ($match in $matches) {
+    foreach ($match in $stringMatches) {
         foreach ($subMatch in $match.Matches) {
             $ids.Add($subMatch.Groups[1].Value)
         }
