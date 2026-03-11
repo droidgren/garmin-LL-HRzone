@@ -6,6 +6,16 @@ Connect IQ data field that displays the average heart rate zone from your last c
 
 - `1.0.3` (2026-03-06)
 
+## Garmin Connect IQ Store
+
+- App page: <https://apps.garmin.com/apps/4e222e42-7b5e-401a-99a1-d221eea68bb6>
+
+<img src="store/screenshots/Cover%20Image_1420.png" alt="Wide Cover" width="600">
+
+<img src="store/screenshots/screen_capture.png" alt="App Screenshot" width="220">
+
+
+
 ## What It Does
 
 - Tracks heart rate samples during the current lap
