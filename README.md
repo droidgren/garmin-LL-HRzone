@@ -1,6 +1,6 @@
 # Last Lap HR Zone
 
-Connect IQ data field that displays the average heart rate zone from your last completed lap.
+Connect IQ data field that displays the average heart rate zone index (0.0-6.0) from your last completed lap.
 
 ## Current Version
 
