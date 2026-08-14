@@ -31,37 +31,58 @@ class LastLapHRZoneView extends WatchUi.DataField {
         mCurrentLapHRSamples = 0;
     }
 
+    // Zone boundaries for the sport the current activity uses, so the values match
+    // Garmin's native HR zone field instead of always using the generic profile.
+    hidden function getActiveHeartRateZones() as Array<Number> or Null {
+        var zones = UserProfile.getHeartRateZones(UserProfile.getCurrentSport());
+        if (zones == null || zones.size() < 2) {
+            // Sport has no dedicated zones configured
+            zones = UserProfile.getHeartRateZones(UserProfile.HR_ZONE_SPORT_GENERIC);
+        }
+
+        return zones;
+    }
+
     // Calculate the decimal HR zone for a given average heart rate.
-    // Returns a float like 3.4 meaning "40% through zone 3".
+    // Returns a float like 3.4 meaning "40% through zone 3". Zone n spans [n.0, n+1.0),
+    // so a 5 zone profile tops out at 6.0 just like the native field.
     hidden function computeHRZone(hr as Float) as Float {
-        var zones = UserProfile.getHeartRateZones(UserProfile.HR_ZONE_SPORT_GENERIC);
+        var zones = getActiveHeartRateZones();
         if (zones == null || zones.size() < 2) {
             return 0.0f;
         }
 
         var numZones = zones.size() - 1;
+        var lowest = zones[0].toFloat();
+        var highest = zones[numZones].toFloat();
 
-        // Below zone 1
-        if (hr < zones[0]) {
-            // Return a proportional value between 0 and 1
-            if (zones[0] > 0) {
-                return hr / zones[0].toFloat();
+        // At or above the top of the highest zone: Garmin's native field caps here
+        if (hr >= highest) {
+            return (numZones + 1).toFloat();
+        }
+
+        // Below zone 1: proportional value between 0 and 1
+        if (hr < lowest) {
+            if (lowest > 0) {
+                return hr / lowest;
             }
             return 0.0f;
         }
 
-        // Find the zone the average HR falls into
-        for (var i = 0; i < numZones; i++) {
+        // Walk down from the top so a collapsed zone cannot trap the value
+        for (var i = numZones - 1; i >= 0; i--) {
             var zoneLow = zones[i].toFloat();
-            var zoneHigh = zones[i + 1].toFloat();
-            if (hr >= zoneLow && hr < zoneHigh) {
-                var fraction = (hr - zoneLow) / (zoneHigh - zoneLow);
-                return (i + 1) + fraction;
+            if (hr >= zoneLow) {
+                var zoneHigh = zones[i + 1].toFloat();
+                if (zoneHigh > zoneLow) {
+                    var fraction = (hr - zoneLow) / (zoneHigh - zoneLow);
+                    return (i + 1) + fraction;
+                }
+                return (i + 1).toFloat();
             }
         }
 
-        // At or above the top of the highest zone
-        return numZones.toFloat();
+        return 0.0f;
     }
 
     // Called once per second during an activity

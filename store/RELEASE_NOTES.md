@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.0.4 (2026-08-14)
+
+- Zone boundaries now come from the current activity's sport, matching Garmin's native HR Zone field instead of always using the generic profile
+- Fixed the zone value being capped at the bottom of the top zone: a heart rate at or above the top of zone 5 now reads `6.0` instead of `5.0`
+
 ## 1.0.3 (2026-03-06)
 
 - Adds an on-device setting to show or hide the `LL HRZ` header text (default ON)
